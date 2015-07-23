@@ -12,9 +12,7 @@ INHOOK = "https://hooks.slack.com/services/"
 DEFAULTPAYLOAD = Dict() 
 
 #Load data from config.jl if present
-if isfile("config.jl")
-    include("config.jl")
-else
+isfile("config.jl") && include("config.jl")
 
 #####################
 
