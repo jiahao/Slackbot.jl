@@ -62,6 +62,7 @@ route(app, GET | POST | PUT, "/") do req, res
             #Unescape HTML entities produced by Slack
             mycmd = replace(mycmd, "&gt;", ">")
             mycmd = replace(mycmd, "&lt;", "<")
+            mycmd = replace(mycmd, "&amp;", "&")
 
             #Replace smart quotes
             mycmd = replace(mycmd, "â\u80\u009c", "\"")
