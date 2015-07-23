@@ -53,8 +53,8 @@ route(app, GET | POST | PUT, "/") do req, res
         json=merge(DEFAULTPAYLOAD, Dict("channel"=>"#"*channelname,
            "attachments" => [
               Dict("title"=>"Julia input", "text"=>mycmd, "fallback"=>mycmd),
-              Dict("title"=>"Julia output", "color"=>color, "text"=>output, "fallback"=>output))
-    ]))
+              Dict("title"=>"Julia output", "color"=>color, "text"=>output, "fallback"=>output)
+    ])))
 end
 
 start(app, 8000)
