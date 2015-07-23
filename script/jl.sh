@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
 while true
 do
-	julia repl.jl
+	julia ../src/repl.jl
 done

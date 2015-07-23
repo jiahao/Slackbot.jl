@@ -3,10 +3,18 @@
 # - a Slack Incoming WebHooks integration
 
 #Replace this with your Slack token for your outgoing webhook
-const TOKEN = ""
+TOKEN = ""
 
 #Replace this with your Webhook URL for your incoming webhook
-const INHOOK = "https://hooks.slack.com/services/"
+INHOOK = "https://hooks.slack.com/services/"
+
+#Add custom JSON entries to the returning payload to the incoming webhook
+DEFAULTPAYLOAD = Dict() 
+
+#Load data from config.jl if present
+if isfile("config.jl")
+    include("config.jl")
+else
 
 #####################
 
@@ -44,12 +52,10 @@ route(app, GET | POST | PUT, "/") do req, res
         string("ERROR: ", exc, "\n", takebuf_string(io)), "danger"
     end
     Requests.post(INHOOK;
-        json=Dict("channel"=>"#"*channelname,
-           #"username"=>"juliatan", #Custom bot user name
-           #"icon_emoji"=>":juliatan:", #Custom bot icon
+        json=merge(DEFAULTPAYLOAD, Dict("channel"=>"#"*channelname,
            "attachments" => [
               Dict("title"=>"Julia input", "text"=>mycmd, "fallback"=>mycmd),
-              Dict("title"=>"Julia output", "color"=>color, "text"=>output, "fallback"=>output)
+              Dict("title"=>"Julia output", "color"=>color, "text"=>output, "fallback"=>output))
     ]))
 end
 
