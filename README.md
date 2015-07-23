@@ -10,6 +10,7 @@ A Julia REPL that interacts with Slack.com's webhook integration
 
   - `TOKEN = "..." #Replace this with your Slack token for your outgoing webhook`
   - `INHOOK = "https://hooks.slack.com/services/..." #Replace this with your Webhook URL for your incoming webhook`
+  - (Optional) `DEBUG = true #Print debugging information to console`
   - (Optional) `DEFAULTPAYLOAD = Dict(
     #Add custom JSON entries to the returning payload to the incoming webhook
     "username"=>"juliatan",

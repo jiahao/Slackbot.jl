@@ -2,6 +2,9 @@
 # - a Slack Outgoing WebHooks integration, and
 # - a Slack Incoming WebHooks integration
 
+#Print debugging information to console?
+DEBUG = false
+
 #Replace this with your Slack token for your outgoing webhook
 TOKEN = ""
 
@@ -12,7 +15,12 @@ INHOOK = "https://hooks.slack.com/services/"
 DEFAULTPAYLOAD = Dict() 
 
 #Load data from config.jl if present
-isfile("config.jl") && include("config.jl")
+#Search for config.jl in current working directory
+configfile = joinpath(pwd(), "config.jl")
+if isfile(configfile)
+    include(configfile)
+    DEBUG && info(string("Loading configuration from ", configfile))
+end
 
 #####################
 
@@ -23,9 +31,9 @@ app = Morsel.app()
 
 route(app, GET | POST | PUT, "/") do req, res
     mycmd = ""
-    channelname = "bots"
+    channelname = "general"
     output, color = try
-    show(req.state[:data])
+        DEBUG && info(string("Received HTTP packet with data\n", repr(req.state[:data]), "\n"))
         data = req.state[:data]
         (haskey(data, "token") && data["token"] == TOKEN) || error("Invalid Slack token")
         channelname = data["channel_name"]
@@ -49,12 +57,15 @@ route(app, GET | POST | PUT, "/") do req, res
         Base.show_backtrace(io, catch_backtrace())
         string("ERROR: ", exc, "\n", takebuf_string(io)), "danger"
     end
-    Requests.post(INHOOK;
-        json=merge(DEFAULTPAYLOAD, Dict("channel"=>"#"*channelname,
+    
+    payload = merge(DEFAULTPAYLOAD, Dict("channel"=>"#"*channelname,
            "attachments" => [
               Dict("title"=>"Julia input", "text"=>mycmd, "fallback"=>mycmd),
               Dict("title"=>"Julia output", "color"=>color, "text"=>output, "fallback"=>output)
-    ])))
+    ]))
+
+    DEBUG && info(string("Posting to URL ", INHOOK, " the JSON payload:\n", payload))
+    Requests.post(INHOOK; json=payload)
 end
 
 start(app, 8000)
