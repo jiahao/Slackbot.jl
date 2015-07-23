@@ -29,6 +29,12 @@ using Morsel
 
 app = Morsel.app()
 
+#For debugging purposes, add an escape hatch to terminate current Julia
+#instance if its internal state gets too hairy
+DEBUG && route(app, GET | POST | PUT, "/reboot") do req, res
+    exit(1)
+end
+
 route(app, GET | POST | PUT, "/") do req, res
     mycmd = ""
     channelname = "general"
@@ -40,8 +46,29 @@ route(app, GET | POST | PUT, "/") do req, res
         username = data["user_name"]
 
         if haskey(data, "text")
-            cmdstart = length(data["trigger_word"])+1
-            mycmd = data["text"][cmdstart:end]
+            cmdstart = length(data["trigger_word"])+2
+            mycmd = strip(data["text"][cmdstart:end])
+
+            if length(mycmd)>=6 && mycmd[1:3] == mycmd[end-2:end] == "```"
+                #Strip triple backquotes from start and end if present
+                DEBUG && info("Removing triple backquotes")
+                mycmd = mycmd[4:end-3]
+            elseif length(mycmd)>=2 && mycmd[1] == mycmd[end] == '`'
+                #Strip single backquotes from start and end if present
+                DEBUG && info("Removing single backquotes")
+                mycmd = mycmd[2:end-1]
+            end
+
+            #Unescape HTML entities produced by Slack
+            mycmd = replace(mycmd, "&gt;", ">")
+            mycmd = replace(mycmd, "&lt;", "<")
+
+            #Replace smart quotes
+            mycmd = replace(mycmd, "â\u80\u009c", "\"")
+            mycmd = replace(mycmd, "â\u80\u9d", "\"")
+            mycmd = replace(mycmd, "â\u80\u0098", "'")
+            mycmd = replace(mycmd, "â\u80\u99", "'")
+
             try
                 string(eval(parse(mycmd))), "good"
             catch exc
