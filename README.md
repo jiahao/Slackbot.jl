@@ -1,6 +1,8 @@
 # Slackbot.jl
 
-A Julia REPL that interacts with Slack.com's webhook integration
+A Julia REPL that interacts with Slack.com's webhook integration.
+
+WARNING: Use at your own risk. This is a very naive, insecure bot that is meant more as proof of concept than for production use.
 
 ## How to use
 
