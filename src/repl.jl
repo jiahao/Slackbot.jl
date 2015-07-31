@@ -22,6 +22,7 @@ if isfile(configfile)
     DEBUG && info(string("Loading configuration from ", configfile))
 end
 
+isa(TOKEN, String) && (TOKEN = [TOKEN])
 #####################
 
 using Requests
@@ -38,15 +39,20 @@ end
 route(app, GET | POST | PUT, "/") do req, res
     mycmd = ""
     channelname = "general"
-    output, color = try
+    output, color, username = try
         DEBUG && info(string("Received HTTP packet with data\n", repr(req.state[:data]), "\n"))
         data = req.state[:data]
-        (haskey(data, "token") && data["token"] == TOKEN) || error("Invalid Slack token")
+
+        (haskey(data, "token") && any(data["token"] .== TOKEN)) || error("Invalid Slack token")
         channelname = data["channel_name"]
         username = data["user_name"]
 
         if haskey(data, "text")
-            cmdstart = length(data["trigger_word"])+2
+            cmdstart = if haskey(data, "trigger_word")
+                length(data["trigger_word"])+2
+            else#if haskey(data, "command")
+                1
+	    end
             mycmd = strip(data["text"][cmdstart:end])
 
             if length(mycmd)>=6 && mycmd[1:3] == mycmd[end-2:end] == "```"
@@ -71,14 +77,14 @@ route(app, GET | POST | PUT, "/") do req, res
             mycmd = replace(mycmd, "â\u80\u99", "'")
 
             try
-                string(eval(parse(mycmd))), "good"
+                string(eval(parse(mycmd))), "good", username
             catch exc
                 io = IOBuffer()
                 Base.show_backtrace(io, catch_backtrace())
-                string("ERROR: ", exc, "\n", takebuf_string(io)), "danger"
+                string("ERROR: ", exc, "\n", takebuf_string(io)), "danger", username
             end
         else
-            "Could not recognize input", "danger"
+            "Could not recognize input", "danger", username
         end
     catch exc
         io = IOBuffer()
@@ -88,7 +94,7 @@ route(app, GET | POST | PUT, "/") do req, res
     
     payload = merge(DEFAULTPAYLOAD, Dict("channel"=>"#"*channelname,
            "attachments" => [
-              Dict("title"=>"Julia input", "text"=>mycmd, "fallback"=>mycmd),
+              Dict("title"=>"Julia input from "*username, "text"=>mycmd, "fallback"=>mycmd),
               Dict("title"=>"Julia output", "color"=>color, "text"=>output, "fallback"=>output)
     ]))
 

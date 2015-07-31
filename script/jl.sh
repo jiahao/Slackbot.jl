@@ -6,4 +6,5 @@
 while true
 do
 	julia src/repl.jl
+	sleep 2
 done
