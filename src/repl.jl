@@ -97,15 +97,19 @@ route(app, GET | POST | PUT, "/") do req, res
             mycmd = replace(mycmd, "â\u80\u0098", "'")
             mycmd = replace(mycmd, "â\u80\u99", "'")
 
-            mycmd = "koala" && return (KOALA, "good", username)
-
+            status = "good"
+            cmdout = ""
             try
-                (string(eval(parse(mycmd))), "good", username)
+                cmdout = string(eval(parse(mycmd)))
             catch exc
                 io = IOBuffer()
                 Base.showerror(io, exc, catch_backtrace())
-                (takebuf_string(io), "danger", username)
+                status = "danger"
+                cmdout = takebuf_string(io)
             end
+
+            mycmd == "koala" && (cmdout = KOALA)
+            (cmdout, status, username)
         else
             ("Could not recognize input", "danger", username)
         end
