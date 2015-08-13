@@ -80,7 +80,7 @@ route(app, GET | POST | PUT, "/") do req, res
                 (string(eval(parse(mycmd))), "good", username)
             catch exc
                 io = IOBuffer()
-                Base.show_error(io, exec, catch_backtrace())
+                Base.showerror(io, exc, catch_backtrace())
                 (takebuf_string(io), "danger", username)
             end
         else
@@ -88,7 +88,7 @@ route(app, GET | POST | PUT, "/") do req, res
         end
     catch exc
         io = IOBuffer()
-        Base.show_error(io, exec, catch_backtrace())
+        Base.showerror(io, exc, catch_backtrace())
         (takebuf_string(io), "danger")
     end
 
