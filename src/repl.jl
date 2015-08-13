@@ -23,6 +23,27 @@ if isfile(configfile)
 end
 
 isa(TOKEN, String) && (TOKEN = [TOKEN])
+
+KOALA = """
+　　　　　　　::.;;|
+　　　　　　　::;;;|
+　　　 r´""'''ヽー--､,,,,,.....__
+　　　（:::::,,,..::;　　　 　　 .,,;;;:,..ヽ
+　　　　ヾ,,.　　　　　　　 ';;;..:.:;; ）
+　　　　　　| ｀ﾟ　l⌒l　ﾟ´ i.,,,,.ノ⌒"''''⌒ヽ
+　　　　　　ト 　 l.,,,,.l　 ノY　　　　　 ,;;;;, ）
+___　,ｨ,ｒ,ｧ　! ｀;ｰ‐--イ 　|　 ﾟ.ｒ‐t. ･ ｒ,ノ
+ト ｀"　ｲ-┴''´""　;;;（"^''ヽ, ゝｲ　.ノ
+ゝー-､,,　　　　　　　 ヾ､　　""'⌒ヽ､
+　　　　 "''ゝ　　　　　　　ヽ　　 　 　 |
+　　　　　 /'""　　　　　 　 |　　　　 　|
+　　　　　|　　　　　　 　 r ､(　　　　　.j
+　　　　<ヽi　　　　　 　 ゝ　　　　　 ノ
+　　　　ゝ　　　　　 　　　 しイ⌒'""
+　　　　　ヽ,,,ノ;;人,,,,,__,,......ノ
+　　　　　　::;;;:|
+　　　　　　:::;;;;|
+"""
 #####################
 
 using Requests
@@ -75,6 +96,8 @@ route(app, GET | POST | PUT, "/") do req, res
             mycmd = replace(mycmd, "â\u80\u9d", "\"")
             mycmd = replace(mycmd, "â\u80\u0098", "'")
             mycmd = replace(mycmd, "â\u80\u99", "'")
+
+            mycmd = "koala" && return (KOALA, "good", username)
 
             try
                 (string(eval(parse(mycmd))), "good", username)
