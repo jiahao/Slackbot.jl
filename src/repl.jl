@@ -12,7 +12,7 @@ TOKEN = ""
 INHOOK = "https://hooks.slack.com/services/"
 
 #Add custom JSON entries to the returning payload to the incoming webhook
-DEFAULTPAYLOAD = Dict() 
+DEFAULTPAYLOAD = Dict()
 
 #Load data from config.jl if present
 #Search for config.jl in current working directory
@@ -52,7 +52,7 @@ route(app, GET | POST | PUT, "/") do req, res
                 length(data["trigger_word"])+2
             else#if haskey(data, "command")
                 1
-	    end
+	        end
             mycmd = strip(data["text"][cmdstart:end])
 
             if length(mycmd)>=6 && mycmd[1:3] == mycmd[end-2:end] == "```"
@@ -77,21 +77,21 @@ route(app, GET | POST | PUT, "/") do req, res
             mycmd = replace(mycmd, "â\u80\u99", "'")
 
             try
-                string(eval(parse(mycmd))), "good", username
+                (string(eval(parse(mycmd))), "good", username)
             catch exc
                 io = IOBuffer()
-                Base.show_backtrace(io, catch_backtrace())
-                string("ERROR: ", exc, "\n", takebuf_string(io)), "danger", username
+                Base.show_error(io, exec, catch_backtrace())
+                (takebuf_string(io), "danger", username)
             end
         else
-            "Could not recognize input", "danger", username
+            ("Could not recognize input", "danger", username)
         end
     catch exc
         io = IOBuffer()
-        Base.show_backtrace(io, catch_backtrace())
-        string("ERROR: ", exc, "\n", takebuf_string(io)), "danger"
+        Base.show_error(io, exec, catch_backtrace())
+        (takebuf_string(io), "danger")
     end
-    
+
     payload = merge(DEFAULTPAYLOAD, Dict("channel"=>"#"*channelname,
            "attachments" => [
               Dict("title"=>"Julia input from "*username, "text"=>mycmd, "fallback"=>mycmd),
