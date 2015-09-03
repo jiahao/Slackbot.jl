@@ -65,8 +65,8 @@ route(app, GET | POST | PUT, "/") do req, res
         data = req.state[:data]
 
         (haskey(data, "token") && any(data["token"] .== TOKEN)) || error("Invalid Slack token")
-        channelname = data["channel_name"]
-        username = data["user_name"]
+        channelname = bytestring(data["channel_name"])
+        username = bytestring(data["user_name"])
 
         if haskey(data, "text")
             cmdstart = if haskey(data, "trigger_word")
@@ -74,7 +74,7 @@ route(app, GET | POST | PUT, "/") do req, res
             else#if haskey(data, "command")
                 1
 	        end
-            mycmd = strip(data["text"][cmdstart:end])
+            mycmd = bytestring(strip(data["text"][cmdstart:end]))
 
             if length(mycmd)>=6 && mycmd[1:3] == mycmd[end-2:end] == "```"
                 #Strip triple backquotes from start and end if present
