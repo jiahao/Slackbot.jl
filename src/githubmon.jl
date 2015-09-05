@@ -71,14 +71,25 @@ while true
                     userurl = "https://github.com/"*user
                     branchurl = "https://github.com/$owner/$repo/tree/master"
 
-                    if dsize==0 || ddsize==0
+                    #Use local git repo to compute whether this change is a fast-forward
+                    if isdir(repo) 
+                        run(`git -C $repo fetch`)
+                    else #Clone a fresh copy
+                        run(`git clone https://github.com/$owner/$repo.git`)
+                    end
+
+                    #How many commits different are these?
+                    ncommits = parse(Int, readall(pipeline(
+                        `git -C $repo rev-list $oldhash ^$newhash`, `wc -l`)))
+                    
+                    if dsize==0 || ddsize==0 || ncommits > 0
                         #master HEAD changed with no new commits. Force push?
                         status = "#d66661"
                         channel = "#general" #General alert
                     else
                         status = "good"
                     end
-                    push!(msgs, "$timestamp: <$userurl|$user> pushed <$oldhashurl|$oldhashs>...<$newhashurl|$newhashs> on <$branchurl|$owner/$repo/master>: $dsize commits ($ddsize distinct)")
+                    push!(msgs, "$timestamp: <$userurl|$user> pushed <$oldhashurl|$oldhashs>...<$newhashurl|$newhashs> on <$branchurl|$owner/$repo/master>: $dsize commits ($ddsize distinct; $ncommits non fast-forward)")
                 end
             end
         end
