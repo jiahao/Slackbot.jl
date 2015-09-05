@@ -9,15 +9,14 @@ owner = "JuliaLang"
 repo = "julia"
 
 oldt = Dates.now() - Dates.Hour(24)
-msgs = ["GitHub reporting started $(Dates.now())"]
+#msgs = ["GitHub reporting started $(Dates.now())"]
+msgs = []
 while true
 
-    t = Dates.now()
+    t = Dates.now(Dates.UTC)
 
     #HTTP time format: http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html
-    httptimestamp = @sprintf("%s, %02d %s %04d %02d:%02d:%02d GMT",
-        Dates.dayabbr(t), Dates.day(t), Dates.monthabbr(t), Dates.year(t),
-        Dates.hour(t), Dates.minute(t), Dates.second(t))
+    httptimestamp = Dates.format(oldt, Dates.RFC1123Format)#*" GMT"
 
     packet = get(URI("https://api.github.com/repos/$owner/$repo/events"),
         headers=Dict("If-Modified-Since"=>httptimestamp))
@@ -25,6 +24,7 @@ while true
     channel = "#bots"
     status = "good"
     if packet.status == 304 #Not modified
+        info("HTTP 304: Not modified")
     elseif packet.status != 200 #Anything other than OK
         status = "#6b85dd"
         push!(msgs, "Warning: HTTP $packet.status received from GitHub API")
@@ -49,9 +49,9 @@ while true
                 user = event["actor"]["login"]
                 timestamp = event["created_at"]
 
-                #if oldt >= Dates.Date(timestamp[1:end-1])
-                #    continue
-                #end
+                if Dates.DateTime(timestamp[1:end-1], Dates.ISODateTimeFormat) < oldt
+                    continue
+                end
 
                 branch = event["payload"]["ref"]
                 if branch == "refs/heads/master"
@@ -111,6 +111,7 @@ while true
     end
 
     msgs = []
+    @show oldt = t
     sleep(120) #Wait before polling GitHub again
 end
 
