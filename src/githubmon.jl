@@ -18,8 +18,12 @@ while true
     #HTTP time format: http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html
     httptimestamp = Dates.format(oldt, Dates.RFC1123Format)#*" GMT"
 
-    packet = get(URI("https://api.github.com/repos/$owner/$repo/events"),
-        headers=Dict("If-Modified-Since"=>httptimestamp))
+    packet = try
+        get(URI("https://api.github.com/repos/$owner/$repo/events"),
+            headers=Dict("If-Modified-Since"=>httptimestamp))
+    catch
+        @goto nexttime
+    end
 
     channel = "#bots"
     status = "good"
@@ -111,7 +115,8 @@ while true
     end
 
     msgs = []
-    @show oldt = t
+    oldt = t
+    @label nexttime
     sleep(120) #Wait before polling GitHub again
 end
 
